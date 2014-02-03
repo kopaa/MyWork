@@ -11,9 +11,6 @@ import java.sql.DriverManager;
 public class ConnectionDB {
     private static Connection connection;
 
-    public ConnectionDB() {
-    }
-
     public static Connection getConnection(String login, String password) throws Exception {
         String url = "jdbc:mysql://localhost:3306/secretsantadb";
         if (connection == null) {

@@ -131,9 +131,9 @@ public class SecretSantaJdbc implements SecretSantaCommand {
     @Override
     public void showGroup(String nameGroup) throws SQLException {
         PreparedStatement statement = connection.prepareStatement(
-                "SELECT users.name FROM users, groups " +
-                        "WHERE users.id_group = groups.id_group " +
-                        "and groups.name = ?;");
+                        "SELECT users.name FROM users " +
+                        "JOIN groups ON users.id_group = groups.id_group " +
+                        "WHERE groups.name = ?;");
         statement.setString(1, nameGroup);
         ResultSet result = statement.executeQuery();
         if (result.wasNull()) {
@@ -164,9 +164,14 @@ public class SecretSantaJdbc implements SecretSantaCommand {
                 }
             }
         }
-        for (int i = 0; i < generatedPairs.size(); i++) {
-            System.out.println(generatedPairs.get(i));
+        if (generatedPairs.size() >= 2){
+            for (int i = 0; i < generatedPairs.size(); i++) {
+                System.out.println(generatedPairs.get(i));
+            }
+        } else {
+            System.out.println("The group " + nameGroup + " has less than two members.");
         }
+
     }
 
     @Override
@@ -177,9 +182,9 @@ public class SecretSantaJdbc implements SecretSantaCommand {
     private ArrayList<String> getUserCollection(String nameGroup) throws SQLException {
         ArrayList<String> users = new ArrayList<String>();
         PreparedStatement statement = connection.prepareStatement(
-                "SELECT users.name FROM users, groups " +
-                        "WHERE users.id_group = groups.id_group " +
-                        "and groups.name = ?;");
+                        "SELECT users.name FROM users " +
+                        "JOIN groups ON users.id_group = groups.id_group " +
+                        "WHERE groups.name = ?;");
         statement.setString(1, nameGroup);
         ResultSet result = statement.executeQuery();
         while (result.next()) {
@@ -191,10 +196,10 @@ public class SecretSantaJdbc implements SecretSantaCommand {
     private String getUserPresent(String nameUser) throws SQLException {
         String presents = "";
         PreparedStatement statement = connection.prepareStatement(
-                "SELECT title FROM presents, users, user_present " +            //Переделать с использованием join
-                        "WHERE users.id_user = user_present.id_user " +
-                        "and presents.id_present = user_present.id_present " +
-                        "and users.name = ?;");
+                        "SELECT title FROM presents " +
+                        "JOIN user_present ON presents.id_present = user_present.id_present " +
+                        "JOIN users ON users.id_user = user_present.id_user " +
+                        "WHERE users.name = ?;");
         statement.setString(1, nameUser);
         ResultSet result = statement.executeQuery();
         if (!result.next()) {
@@ -214,7 +219,7 @@ public class SecretSantaJdbc implements SecretSantaCommand {
 
     private boolean isGroupInDB(String nameGroup) throws SQLException {
         PreparedStatement statement = connection.prepareStatement(
-                "SELECT name FROM groups WHERE name = ?");
+                        "SELECT name FROM groups WHERE name = ?");
         statement.setString(1, nameGroup);
         ResultSet result = statement.executeQuery();
         return result.next();
@@ -222,8 +227,8 @@ public class SecretSantaJdbc implements SecretSantaCommand {
 
     private int getIdGroup(String nameGroup) throws SQLException {
         PreparedStatement statement = connection.prepareStatement(
-                "SELECT id_group, name FROM groups " +
-                        "WHERE name = ?;");
+                        "SELECT id_group FROM groups " +
+                        "WHERE groups.name = ?;");
         statement.setString(1, nameGroup);
         ResultSet result = statement.executeQuery();
         if (result.next()) {
@@ -235,8 +240,9 @@ public class SecretSantaJdbc implements SecretSantaCommand {
 
     private boolean isUserInGroup(String nameGroup, String nameUser) throws SQLException {
         PreparedStatement statement = connection.prepareStatement(
-                "SELECT users.name FROM users, groups " +
-                        "WHERE groups.id_group = users.id_group and groups.name = ? and users.name = ?;");
+                        "SELECT users.name FROM users " +
+                        "JOIN groups ON groups.id_group = users.id_group " +
+                        "WHERE groups.name = ? and users.name = ?;");
         statement.setString(1, nameGroup);
         statement.setString(2, nameUser);
         ResultSet result = statement.executeQuery();
@@ -245,8 +251,8 @@ public class SecretSantaJdbc implements SecretSantaCommand {
 
     private int getIdUser(String nameUser) throws SQLException {
         PreparedStatement statement = connection.prepareStatement(
-                "SELECT id_user, name FROM users " +
-                        "WHERE name = ?;");
+                        "SELECT id_user FROM users " +
+                        "WHERE users.name = ?;");
         statement.setString(1, nameUser);
         ResultSet result = statement.executeQuery();
         if (result.next()) {
@@ -258,10 +264,10 @@ public class SecretSantaJdbc implements SecretSantaCommand {
 
     private boolean hasTheUserPresent(String nameUser, String titlePresent) throws SQLException {
         PreparedStatement statement = connection.prepareStatement(
-                "SELECT title FROM presents, users, user_present " +
-                        "WHERE users.id_user = user_present.id_user " +
-                        "and presents.id_present = user_present.id_present " +
-                        "and users.name = ? and presents.title = ?;");
+                        "SELECT title FROM presents " +
+                        "JOIN user_present ON presents.id_present = user_present.id_present " +
+                        "JOIN users ON users.id_user = user_present.id_user " +
+                        "WHERE users.name = ? and presents.title = ?;");
         statement.setString(1, nameUser);
         statement.setString(2, titlePresent);
         ResultSet result = statement.executeQuery();
@@ -270,8 +276,8 @@ public class SecretSantaJdbc implements SecretSantaCommand {
 
     private int getIdPresent(String titlePresent) throws SQLException {
         PreparedStatement statement = connection.prepareStatement(
-                "SELECT id_present, title FROM presents " +
-                        "WHERE title = ?;");
+                        "SELECT id_present FROM presents " +
+                        "WHERE presents.title = ?;");
         statement.setString(1, titlePresent);
         ResultSet result = statement.executeQuery();
         if (result.next()) {

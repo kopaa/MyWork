@@ -10,18 +10,16 @@ import java.io.InputStreamReader;
 public class App {
     public static void main(String[] args) throws Exception {
         try {
-            SecretSantaJdbc s = new SecretSantaJdbc(ConnectionDB.getConnection("root", "andrew85"));
+            SecretSantaCommand s = new SecretSantaJdbc(ConnectionDB.getConnection("root", "andrew85"));
             BufferedReader input = new BufferedReader(new InputStreamReader(System.in));
             while (s.isExit()) {
                 System.out.println(s.getMenu());
                 s.createCommand(input.readLine());
             }
-
         } catch (Exception e) {
-            e.printStackTrace();
+            System.out.println("Problem occurred: " + e.getMessage());
         } finally {
             ConnectionDB.closeConnection();
-            System.out.println("");
         }
     }
 }
